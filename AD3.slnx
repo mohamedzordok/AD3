@@ -1,3 +1,217 @@
-<Solution>
-  <Project Path="AD3/AD3.csproj" />
-</Solution>
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+class Program
+{
+    static void Main()
+    {
+        Exercise1(); Exercise2(); Exercise3();
+        Exercise4(); Exercise5(); Exercise6();
+    }
+
+    // ------------------------------------------------------------
+    // Exercise 1: Student Grade Manager  -> List<int>
+    // ------------------------------------------------------------
+    static void Exercise1()
+    {
+        Console.WriteLine("===== Exercise 1: Student Grade Manager =====");
+
+        List<int> grades = new List<int> { 85, 92, 78, 95, 88, 70, 100, 65 };
+
+        Console.WriteLine("Grades: " + string.Join(", ", grades));
+        Console.WriteLine($"Count: {grades.Count}");
+        Console.WriteLine($"First: {grades[0]}  |  Last: {grades[grades.Count - 1]}");
+
+        grades.Sort();   // ascending
+        Console.WriteLine("Sorted: " + string.Join(", ", grades));
+
+        int firstAbove90 = grades.Find(g => g > 90);
+        Console.WriteLine($"First grade above 90: {firstAbove90}");
+
+        List<int> failing = grades.FindAll(g => g < 75);
+        Console.WriteLine("Failing grades: " + string.Join(", ", failing));
+
+        int removed = grades.RemoveAll(g => g < 75);
+        Console.WriteLine($"Removed {removed} grades. Now: " + string.Join(", ", grades));
+
+        Console.WriteLine($"Any grade equals 100? {grades.Contains(100)}");
+
+        List<string> labels = grades.Select(g => $"Grade: {g}").ToList();
+        labels.ForEach(Console.WriteLine);
+        Console.WriteLine();
+    }
+
+    // ------------------------------------------------------------
+    // Exercise 2: Leaderboard  -> SortedDictionary<int, string>
+    // ------------------------------------------------------------
+    static void Exercise2()
+    {
+        Console.WriteLine("===== Exercise 2: Leaderboard =====");
+
+        SortedDictionary<int, string> board = new SortedDictionary<int, string>();
+        board.Add(500, "Ahmed");
+        board.Add(200, "Sara");
+        board.Add(800, "Ali");
+        board.Add(350, "Mona");
+
+        foreach (KeyValuePair<int, string> entry in board)
+            Console.WriteLine($"{entry.Key} => {entry.Value}");
+
+        var first = board.First();
+        Console.WriteLine($"First key: {first.Key}, First value: {first.Value}");
+
+        Console.WriteLine($"Score 500 exists? {board.ContainsKey(500)}");
+
+        if (board.TryGetValue(999, out string player))
+            Console.WriteLine($"Player with 999: {player}");
+        else
+            Console.WriteLine("No player with score 999");
+
+        board.Remove(200);
+        Console.WriteLine("After removing 200:");
+        foreach (var entry in board)
+            Console.WriteLine($"{entry.Key} => {entry.Value}");
+        Console.WriteLine();
+    }
+
+    // ------------------------------------------------------------
+    // Exercise 3: Phone Book  -> Dictionary<string, string>
+    // ------------------------------------------------------------
+    static void Exercise3()
+    {
+        Console.WriteLine("===== Exercise 3: Phone Book =====");
+
+        Dictionary<string, string> phoneBook = new Dictionary<string, string>
+        {
+            { "Ahmed", "0100000001" },
+            { "Sara",  "0100000002" },
+            { "Ali",   "0100000003" },
+            { "Mona",  "0100000004" }
+        };
+
+        // [] syntax: adds if the key is new, updates if it exists
+        phoneBook["Omar"] = "0100000005";    // add
+        phoneBook["Ahmed"] = "0111111111";   // update
+        Console.WriteLine($"Omar = {phoneBook["Omar"]}, Ahmed (updated) = {phoneBook["Ahmed"]}");
+
+        // .Add() with a duplicate key -> throws ArgumentException
+        try
+        {
+            phoneBook.Add("Sara", "0122222222");
+        }
+        catch (ArgumentException ex)
+        {
+            Console.WriteLine($"Error: {ex.Message}");
+        }
+
+        // .TryAdd() with a duplicate key -> returns false, no exception
+        bool added = phoneBook.TryAdd("Sara", "0122222222");
+        Console.WriteLine($"TryAdd succeeded? {added}");
+
+        // Search for a contact that doesn't exist
+        if (phoneBook.TryGetValue("Zaid", out string number))
+            Console.WriteLine($"Zaid: {number}");
+        else
+            Console.WriteLine("Zaid was not found");
+
+        // Fallback value
+        Console.WriteLine("Zaid: " + phoneBook.GetValueOrDefault("Zaid", "Not Found"));
+
+        Console.WriteLine("Keys:   " + string.Join(", ", phoneBook.Keys));
+        Console.WriteLine("Values: " + string.Join(", ", phoneBook.Values));
+        Console.WriteLine();
+    }
+
+    // ------------------------------------------------------------
+    // Exercise 4: Unique Email Validator  -> HashSet<T>
+    // ------------------------------------------------------------
+    static void Exercise4()
+    {
+        Console.WriteLine("===== Exercise 4: Unique Email Validator =====");
+
+        HashSet<string> emails = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (string email in new[] { "ahmed@test.com", "AHMED@test.com", "sara@test.com", "Sara@Test.Com" })
+            Console.WriteLine($"Add \"{email}\": {emails.Add(email)}");
+
+        Console.WriteLine($"Count: {emails.Count}");   // 2
+        Console.WriteLine("Why 2? The comparer ignores letter case, so \"AHMED@test.com\" is the same");
+        Console.WriteLine("as \"ahmed@test.com\" and \"Sara@Test.Com\" is the same as \"sara@test.com\".");
+        Console.WriteLine("Add() returns false for the duplicates and nothing is stored.");
+
+        HashSet<int> setA = new HashSet<int> { 1, 2, 3, 4, 5 };
+        HashSet<int> setB = new HashSet<int> { 4, 5, 6, 7, 8 };
+
+        // These methods MODIFY the set they are called on, so we work on copies
+        HashSet<int> union = new HashSet<int>(setA);
+        union.UnionWith(setB);
+        Console.WriteLine("UnionWith:     " + string.Join(", ", union));       // 1..8
+
+        HashSet<int> intersect = new HashSet<int>(setA);
+        intersect.IntersectWith(setB);
+        Console.WriteLine("IntersectWith: " + string.Join(", ", intersect));   // 4, 5
+
+        HashSet<int> except = new HashSet<int>(setA);
+        except.ExceptWith(setB);
+        Console.WriteLine("ExceptWith:    " + string.Join(", ", except));      // 1, 2, 3
+
+        HashSet<int> small = new HashSet<int> { 1, 2 };
+        Console.WriteLine($"{{1,2}} is subset of Set A? {small.IsSubsetOf(setA)}");
+        Console.WriteLine();
+    }
+
+    // ------------------------------------------------------------
+    // Exercise 5: Print Queue Simulator  -> Queue<T> (FIFO)
+    // ------------------------------------------------------------
+    static void Exercise5()
+    {
+        Console.WriteLine("===== Exercise 5: Print Queue Simulator =====");
+
+        Queue<string> queue = new Queue<string>();
+        queue.Enqueue("Report.pdf");
+        queue.Enqueue("Invoice.pdf");
+        queue.Enqueue("Letter.docx");
+        queue.Enqueue("Resume.pdf");
+        queue.Enqueue("Photo.jpg");
+
+        Console.WriteLine("Queue: " + string.Join(", ", queue));
+        Console.WriteLine($"Count: {queue.Count}");
+
+        Console.WriteLine($"Next to print (Peek): {queue.Peek()}");
+
+        while (queue.Count > 0)
+            Console.WriteLine($"Printing: {queue.Dequeue()}");
+
+        bool ok = queue.TryDequeue(out string doc);
+        Console.WriteLine($"TryDequeue on empty queue -> returned {ok}, doc is {(doc == null ? "null" : doc)}");
+        Console.WriteLine();
+    }
+
+    // ------------------------------------------------------------
+    // Exercise 6: Browser History (Undo)  -> Stack<T> (LIFO)
+    // ------------------------------------------------------------
+    static void Exercise6()
+    {
+        Console.WriteLine("===== Exercise 6: Browser History =====");
+
+        Stack<string> history = new Stack<string>();
+        history.Push("google.com");
+        history.Push("github.com");
+        history.Push("stackoverflow.com");
+        history.Push("youtube.com");
+        history.Push("claude.ai");
+
+        Console.WriteLine($"Current page (Peek): {history.Peek()}");
+
+        for (int i = 0; i < 3; i++)
+            Console.WriteLine($"Leaving: {history.Pop()}");
+
+        Console.WriteLine($"Current page now: {history.Peek()}");
+
+        // Empty the stack first, then try TryPop
+        while (history.Count > 0) history.Pop();
+
+        bool ok = history.TryPop(out string page);
+        Console.WriteLine($"TryPop on empty stack -> returned {ok}, page is {(page == null ? "null" : page)}");
+    }
+}
